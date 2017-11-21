@@ -16,7 +16,7 @@ private:
 	int icp(char op);		//栈外优先数
 	double DoOperator(double x, char op, double y);
 	//形成运算指令，进行运算
-	void GETCHAR(char &ch);	//从输入流获取一字符ch并跳过空格及回车
+	void GETCHAR(char &ch);	//从输入流获取一字符ch并跳过空格及TAB
 	bool IsOperator(char ch);//判断ch是否为操作符
 };
 
@@ -119,6 +119,9 @@ bool Calculator::IsOperator(char ch)
 	case '*':
 	case '/':
 	case '^':
+	case '=':
+	case '(':
+	case ')':
 		return true;
 		break;
 	default:
@@ -134,12 +137,10 @@ void Calculator::Run()
 	OPTR.Push('=');//为方便编程，先加入一个=
 	cout << "Please input expression :" << endl;
 	char ch;//读入一个字符
-	char priorChar;
 	char optrTop;//临时OPTR栈的栈顶
 	double operand;//操作数
 	char op;//操作符
 
-	priorChar = '=';
 	GETCHAR(ch);
 	if (OPTR.Top(optrTop) == UNDER_FLOW) throw Error("表达式有错！");
 
@@ -150,34 +151,27 @@ void Calculator::Run()
 			cin.putback(ch);
 			cin >> operand;
 			OPND.Push(operand);//将操作数压栈
-			priorChar = '0';
 			GETCHAR(ch);		//读入下一个字符
 		}
 		
-	//	else if (IsOperator(ch))
-	//	{
-	//		throw Error("表达式有错1");
-	//	}
+		else if (!IsOperator(ch))
+		{
+			cout << ch;
+			throw Error("表达式有错1");
+		}
 		else
 		{//遇到运算符，则应与运算符栈optr的栈顶比较，
 		//若栈顶运算符优先级低于当前运算符，
 		//则当前运算符进栈，否则栈顶运算符退栈
 		//若optr栈顶为“(”，当前运算符为“)”，则将“(”出栈。继续处理后续输入
-			if ((priorChar == '=' || priorChar == '(') && (ch == '+' || ch == '-'))
-			{
-				OPND.Push(0);
-				priorChar = '0';
-			}
 			if (optrTop == '('&&ch == ')')
 			{
 				if(OPTR.Pop(optrTop)==UNDER_FLOW) throw Error("表达式有错2");//将‘（’出栈
 				GETCHAR(ch);//读入下一字符
-				priorChar = ')';
 			}
 			else if (ch == '(' || isp(optrTop) < icp(ch))
 			{
 				OPTR.Push(ch);
-				priorChar = ch;
 				GETCHAR(ch);
 			}
 			else
